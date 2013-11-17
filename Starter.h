@@ -12,6 +12,9 @@
 #include <string>
 #include <iostream>
 #include <pthread.h>
+#include <queue>
+#include <sys/time.h>
+#include <unistd.h>
 #include "Algo9.h"
 #include "communication.h"
 #include "MaekawaAlgorithm.h"
@@ -21,14 +24,19 @@ using namespace std;
 class Starter {
 private:
 	Torum *node;
-    MaekawaAlgorithm *mnode;
+	MaekawaAlgorithm *mnode;
 	int quorumSize;
 	int NumNodes;
 	int **Quorum;
-	int id;
+
 	char **mapIDtoIP;
+	char CS_FILENAME[25];
 	void parseMsg(const string& s,const string& delim,std::vector<string>& tokens);
+	
 public:
+	int id;
+
+	struct timeval start, end;
 	Starter();
 	virtual ~Starter();
 	void init();
@@ -36,8 +44,12 @@ public:
 	void decideAlgorithm();
 	void Algorithm1();
 	void Algorithm2();
-	void processing();
-    
+
 };
+
+void *TorumListen(void* queue);
+void *TorumProcess(void* queue);
+void *MaekawaListen(void* queue);
+void *MaekawaProcess(void* queue);
 
 #endif /* STARTER_H_ */

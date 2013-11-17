@@ -7,18 +7,23 @@
 #define HAVE_TOKEN 1
 #define RELEASE 2
 #define SEND_TOKEN 3
-#define MAKE_REQUEST 11
 
 #define LOCKED 4
 #define FAILED 5
 #define INQUIRE 6
 #define RELINQUISH 7
 
+#define MAKE_REQUEST 11
+#define END_PROCESS 12
+
 #define CONTROLLER_ID 45
+#define CONTROLLER_IP "10.176.67.107"
 
 #define LISTEN_PORT 3492
 #define LISTEN_PORT2 3592
 #define LISTEN_PORT3 3692
+#define LISTEN_PORT_END 3793
+
 
 #define MAXLENGTH_IP_ADDR 16
 

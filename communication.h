@@ -43,9 +43,4 @@ public:
 
 };
 
-void *TorumListen(void* queue);
-void *TorumProcess(void* queue);
-void *MaekawaListen(void* queue);
-void *MaekawaProcess(void* queue);
-
 #endif /*COMMUNICATION_H_*/

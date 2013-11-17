@@ -11,6 +11,7 @@
 
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "MessageFormat.h"
 #include "communication.h"
@@ -21,11 +22,12 @@ class MaekawaAlgorithm
 {
 protected:
     
-	int processID;
+
 	long sequenceNo;
 	int ** quorum;
 	int quorumsize;
 	int NoOfnodes;
+    int NodesTotalNumber;
 	bool hasFailed;
 	bool hasCompletedCriticalSection;
     bool hasSentLockedMessage;
@@ -35,12 +37,17 @@ protected:
     int lockedBy;
     int hasReceivedLockedMessage;
     vector< vector<int> > quorumVote;
+//    int hasLockedFor[16];
+    vector< vector<int> > hasLockedFor;
     vector<int> relinquishList;
 	LexiQueue *queue;
     pthread_mutex_t sharedLock;
     
 public:
+    int processID;
     communication com;
+    char CS_FILENAME[25];
+    int flagforCS;
     static MaekawaAlgorithm* getInstance();
     void receiveMessage(Packet msg);
     void receiveMakeRequest(Packet makeRequest);
@@ -64,7 +71,7 @@ private:
     MaekawaAlgorithm(MaekawaAlgorithm const& copy){};
     //MaekawaAlgorithm& operator=(MaekawaAlgorithm const& copy){};
     static MaekawaAlgorithm* instance;
-    
+    void writeToFile(string filename,string line);
 };
 
 #endif;

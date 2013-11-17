@@ -26,11 +26,11 @@ public:
 	~LexiQueue(void);
 	Packet top();
 	Packet remove(int origin);
-    bool equalsTo(Packet m1, Packet m2);
 	bool add(Packet in);
 	int size();
 	bool isEmpty();
-	bool update(int **quorum,int qsize,int ID);
+	bool updateTorumQ(int **quorum,int qsize,int ID);
+	bool equalsTo(Packet m1, Packet m2);
 };
 
 class BlockingQueue{

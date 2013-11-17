@@ -1,13 +1,15 @@
 #include "Controller.h"
-#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include<iostream>
 using namespace std;
 
 
 
 
 //Msg type=100
-Controller::Controller(void):QuorumTable{//{0,1,2},{0,1,3},{0,2,3},{1,2,3}
-        {0, 1, 2, 3, 4, 8, 12},
+Controller::Controller(void):QuorumTable{{0,1,2},{1,3,5},{2,4,5},{0,3,4},{1,4,6},{0,5,6},{2,3,6}/*{0, 1, 2, 3, 4, 8, 12},
 		{0, 1, 2, 3, 5, 9, 13},
 		{0, 1, 2, 3, 6, 10, 14},
 		{0, 1, 2, 3, 7, 11, 15},
@@ -22,7 +24,7 @@ Controller::Controller(void):QuorumTable{//{0,1,2},{0,1,3},{0,2,3},{1,2,3}
 		{12, 13, 14, 15, 0, 4, 8},
 		{12, 13, 14, 15, 1, 5, 9},
 		{12, 13, 14, 15, 2, 6, 10},
-		{12, 13, 14, 15, 3, 7, 11}
+		{12, 13, 14, 15, 3, 7, 11}*/
 }
 {
 	Algorithm = 0;
@@ -32,6 +34,23 @@ Controller::~Controller(void)
 {
 	//delete QuorumTable;
 }
+
+vector<string> &split(const string &s, char delim, vector<string> &elems) {
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+vector<string> split(const string &s, char delim) {
+    vector<string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
 
 void DieWithError1(char* errorMessage)
 {
@@ -175,15 +194,6 @@ void Controller::sendTokenToNode()
 
 	com.sendMessage(pack,desIP,LISTEN_PORT3);
 
-	Packet pack1;
-		pack1.TYPE = MAKE_REQUEST;
-		pack1.ORIGIN = CONTROLLER_ID;
-		pack1.SEQ =1;
-		pack1.sender = CONTROLLER_ID;
-		char desIP2[16];
-			strncpy(desIP2,mapIPtoID[1],16);
-			printf("sending MAKE_REQUEST to Node 1 at IP %s\n",desIP2);
-
 }
 
 void Controller::decideAlgorithm(){
@@ -207,6 +217,8 @@ void Controller::decideAlgorithm(){
 		}
 		printf("strtosend: %s",strToSend.c_str());
 		con.writeToSocket(sockfd,const_cast<char*> (strToSend.c_str()),4095);
+		char *csfilename=CS_FILENAME;
+		con.writeToSocket(sockfd,csfilename,25);
 		shutdown(sockfd,0);
 		close(sockfd);
 	}
@@ -223,108 +235,200 @@ void Controller::decideAlgorithm(){
 }
 
 void Controller::Algorithm1(){
-    printf("\nYou have chosen Quorum Based Mutual Exclusion Algorithm: Maekawa\n");
+	printf("\nYou have chosen Maekawa Distributed Mutual Exclusion Algorithm\n");
 	UserInput();
-    
-//	printf("\nYou have chosen Maekawa Distributed Mutual Exclusion Algorithm\n");
-//    Packet pack1;
-//    pack1.TYPE = MAKE_REQUEST;
-//    pack1.ORIGIN = CONTROLLER_ID;
-//    pack1.SEQ = 1;
-//    pack1.sender = -1;
-//    communication com;
-//    
-//    char desIP[16];
-//    strncpy(desIP,mapIPtoID[1],16);
-//	printf("sending MAKE_REQUEST to Node 1 at IP %s\n",desIP);
-//    
-//    com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	pack1.SEQ =2;
-//	com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	pack1.SEQ =3;
-//	//com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	sleep(10);
 }
-
-//void Controller::Algorithm2(){
-//	printf("\nYou have chosen Token and Quorum Based Mutual Exclusion Algorithm: Torum\n");
-//	sendTokenToNode();
-//
-//	Packet pack1;
-//	pack1.TYPE = MAKE_REQUEST;
-//	pack1.ORIGIN = CONTROLLER_ID;
-//	pack1.SEQ =1;
-//	pack1.sender = CONTROLLER_ID;
-//	communication com;
-//	char desIP[16];
-//	strncpy(desIP,mapIPtoID[1],16);
-//	printf("sending MAKE_REQUEST to Node 1 at IP %s\n",desIP);
-//
-//	com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	pack1.SEQ =2;
-//	com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	pack1.SEQ =3;
-//	//com.sendMessage(pack1,desIP,LISTEN_PORT3);
-//	sleep(10);
-//}
-
 void Controller::Algorithm2(){
 	printf("\nYou have chosen Token and Quorum Based Mutual Exclusion Algorithm: Torum\n");
 	sendTokenToNode();
 	UserInput();
-    /*
-     Packet pack1;
-     pack1.TYPE = MAKE_REQUEST;
-     pack1.ORIGIN = CONTROLLER_ID;
-     pack1.SEQ =1;
-     pack1.sender = CONTROLLER_ID;
-     communication com;
-     char desIP[16];
-     strncpy(desIP,mapIPtoID[1],16);
-     printf("sending MAKE_REQUEST to Node 1 at IP %s\n",desIP);
-     
-     
-     com.sendMessage(pack1,desIP,LISTEN_PORT3);
-     pack1.SEQ =2;
-     com.sendMessage(pack1,desIP,LISTEN_PORT3);
-     pack1.SEQ =3;
-     //com.sendMessage(pack1,desIP,LISTEN_PORT3);
-     
-	 */
+
 }
 
 void Controller::UserInput(){
 	printf("Enter your requests for critical section here...\n");
 	printf("");
-	while(true){
-    //for(int i=0;i<10;i++){
+	for(int i=0;;i++){
 		int id=0;
-		printf("enter id to send request for CS\n");
-		cin>>id;
-		sendCSrequests(id);
+		string input;
+		printf("Enter id to send request for CS (Use ':' to send the simultaneous requests )\n");
+		cin>>input;
+		vector<string> x = split(input, ':');
+			
+			for( vector<string>::const_iterator i = x.begin(); i != x.end(); ++i)
+			{
+
+				int k=atoi((*i).c_str());
+				if(k == 999){
+							endProcess();
+							return;
+						}
+			    cout << k << ' '<<'\n';
+			    sendCSrequests(k);
+			    
+			}
+		
+		/*cin>>id;
+		if(id == 999){
+			endProcess();
+			return;
+		}
+		if(id == 50)
+		{
+			int num=0;
+			printf("Enter the number of simultaneous requests:\n");
+			cin>>num;
+			printf("Enter the id:\n");
+			for(int i=0;i<num;i++)
+			{
+				int nID=9999;
+				printf("Enter the id:\n");
+				cin>>nID;
+				sendCSrequests(id);
+				
+			}
+			
+			
+		}
+		else
+			sendCSrequests(id);*/
 	}
 }
 
+void createCSFile(){
+		string str = "../";
+		str += CS_FILENAME;
+		char *fname = new char[30];
+		strcpy(fname,str.c_str());
+		ofstream myfile (fname,ios::out);
+		  if (myfile.is_open())
+		  {
+		    myfile <<"#This file contains log of Critical Section Requests from the Nodes"<<endl;
+		    myfile.close();
+		  }
+		  else cout << "Unable to open file";
+}
 void Controller::sendCSrequests(int node){
+	numOfCSRequests++;
 	Packet pack1;
 	pack1.TYPE = MAKE_REQUEST;
 	pack1.ORIGIN = CONTROLLER_ID;
-	pack1.SEQ = 1;
+	pack1.SEQ =1;
 	pack1.sender = CONTROLLER_ID;
 	communication com;
 	char desIP[16];
 	strncpy(desIP,mapIPtoID[node],16);
 	printf("sending MAKE_REQUEST to Node %d at IP %s\n",node,desIP);
-    
+
 	com.sendMessage(pack1,desIP,LISTEN_PORT3);
 }
-
 void Controller::initiate(Controller *c){
+	numOfCSRequests = 0;
+	TotalNoMsgs = 0;
+	TotalTime = 0;
+	createCSFile();
 	pthread_t listen;
 	pthread_create(&listen, NULL,listener,(void*)c );
 	pthread_join(listen,NULL);
 
 }
+
+void Controller::endProcess()
+{
+	Packet pack1;
+	pack1.TYPE = END_PROCESS;
+	pack1.ORIGIN = CONTROLLER_ID;
+	pack1.SEQ =1;
+	pack1.sender = CONTROLLER_ID;
+	communication com;
+	char desIP[16];
+	for(int n=0;n<MAXNODES;n++){
+	strncpy(desIP,mapIPtoID[n],16);
+	printf("sending END_PROCESS to Node %d at IP %s\n",n,desIP);
+	com.sendMessage(pack1,desIP,LISTEN_PORT3);
+	}
+
+
+	int TotalNoMsgs = 0;
+	int TotalTime = 0;
+	printf("End of Algorithm!!\n Calculating the statistics . . .\n");
+	int counter=0;
+		int servSock;                    /* Socket descriptor for server */
+		int clntSock;                    /* Socket descriptor for client */
+		struct sockaddr_in echoServAddr; /* Local address */
+		struct sockaddr_in echoClntAddr; /* Client address */
+		unsigned short echoServPort;     /* Server port */
+		socklen_t clntLen;            /* Length of client address data structure */
+
+
+		echoServPort = LISTEN_PORT_END;  /* First arg:  local port */
+
+		/* Create socket for incoming connections */
+		if ((servSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+			DieWithError1("socket() failed");
+
+		/* Construct local address structure */
+		memset(&echoServAddr, 0, sizeof(echoServAddr));   /* Zero out structure */
+		echoServAddr.sin_family = AF_INET;                /* Internet address family */
+		echoServAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
+		echoServAddr.sin_port = htons(echoServPort);      /* Local port */
+
+		/* Bind to the local address */
+		if (bind(servSock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
+			DieWithError1("bind() failed");
+
+		/* Mark the socket so it will listen for incoming connections */
+		if (listen(servSock, MAXPENDING) < 0)
+			DieWithError1("listen() failed");
+
+		for(int n=0;n<MAXNODES;n++){
+			/* Set the size of the in-out parameter */
+			clntLen = sizeof(echoClntAddr);
+			/* Wait for a client to connect */
+			if ((clntSock = accept(servSock, (struct sockaddr *) &echoClntAddr,&clntLen)) < 0)
+			{
+				close(servSock);
+				DieWithError1("accept() failed");
+			}
+
+			/* clntSock is connected to a client! */
+			char *client_ip = inet_ntoa(echoClntAddr.sin_addr);
+			printf("\nClient socket %d, addlen : %d %s\n",clntSock,sizeof(client_ip),client_ip);
+
+			communication com;
+			int id = -1;
+			com.readFromSocket(clntSock,&id,sizeof(int));
+			long msgc;
+			com.readFromSocket(clntSock,&msgc,sizeof(long));
+			TotalNoMsgs +=msgc;
+			long time;
+			com.readFromSocket(clntSock,&time,sizeof(long));
+			TotalTime +=time;
+
+			shutdown(clntSock,0);
+					int k = close(clntSock);
+					if (k < 0) {
+							printf("\nError in Closing");
+							exit(0);
+					}
+		}
+		shutdown(servSock,2);
+			int k = close(servSock);
+			if (k < 0) {
+				printf("\nError in Closing");
+				exit(0);
+			}
+		float avgMsg = (float)TotalNoMsgs/numOfCSRequests;
+		float avgTime = (float)TotalTime/numOfCSRequests;
+		printf("TotalNum of Msgs:%ld, TotalTime: %ld\n",TotalNoMsgs,TotalTime);
+		printf("Average Number of Messages used: %.3f, tested on %d requests\n",avgMsg,numOfCSRequests);
+		printf("Average Time Taken for each Request: %.3f, tested on %d requests\n",avgTime,numOfCSRequests);
+
+	printf("Bye!!!\n");
+}
+
+
+
 
 int main()
 {
@@ -338,4 +442,4 @@ int main()
 	printf("end of controller\n");
 		return 0;
 }
-/**/
+

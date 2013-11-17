@@ -9,8 +9,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
+#include<fstream>
 #include "Starter.h"
-
+#include "LexiQueue.h"
 using namespace std;
 
 int main() {
@@ -18,6 +19,9 @@ int main() {
 
 	Starter s;
 	s.init();
+
+	//ifstream input("time.in", ios::in);
+
 
 	return 0;
 }
