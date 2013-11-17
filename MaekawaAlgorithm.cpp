@@ -334,14 +334,19 @@ bool MaekawaAlgorithm::receiveRelinquish(Packet relinquish){
     //Update quorumVote Table
     printf("--^^--quorumVote Table--^^-- \n");
     
-    //Check if the current node has received all the locked messages
-    for(int i = 0; i < quorumsize; i++){
-        printf("%d , %d \n",quorumVote[i][0],quorumVote[i][1]);
-        if(quorumVote[i][0] == processID){
-            quorumVote[i][1] = 0;
+
+    
+
+    
+    if(relinquish.ORIGIN == processID){
+        for(int i = 0; i < quorumsize; i++){
+            printf("%d , %d \n",quorumVote[i][0],quorumVote[i][1]);
+            if(quorumVote[i][0] == processID){
+                quorumVote[i][1] = 0;
+            }
         }
+        printf("----Node %d has received %d LOCKED messages \n",processID,hasReceivedLockedMessage);
     }
-    printf("----Node %d has received %d LOCKED messages \n",processID,hasReceivedLockedMessage);
     
     if(queue->top().ORIGIN != processID){
         //check if it has sent locked message to this node before
@@ -543,9 +548,9 @@ bool MaekawaAlgorithm::receiveRelease(Packet release){
     if(release.ORIGIN == processID){
         //Call requestCriticalSection to broadcast request
         if(hasSentRequestMessage > 0){
-            hasSentRequestMessage--;
             requestCriticalSection();
         }
+        hasSentRequestMessage--;
         printf("----Node %d has %d request left to send.\n",processID,hasSentRequestMessage);
     }
     
